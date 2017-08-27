@@ -1,7 +1,7 @@
 {
   "name": "maintenance",
   "version": "0.1.0",
-  "homepage": "https://myusername.github.io/my-app",
+  "homepage": "https://myusername.github.io/TruckMaintenanceLogs",
   "private": true,
   "dependencies": {
     "gh-pages": "^1.0.0",
