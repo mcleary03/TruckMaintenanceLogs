@@ -1,0 +1,28 @@
+.App {
+  text-align: center;
+}
+
+#logo {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#title {
+  padding: 0;
+  font-size: 2em;
+  font-weight: 800;
+  color: #054BBC;
+  text-shadow: 1px 1px rgba(10, 10, 10, 0.5);
+}
+
+#truckImage {
+  width: 25vw;
+}
+
+h1 {
+  color: #5F80EE;
+}
+
+a:hover {
+  cursor: pointer;
+}
