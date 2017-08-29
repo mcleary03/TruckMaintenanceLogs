@@ -8,9 +8,9 @@ class TopMenu extends Component {
     return (
       <div>
         <Menu className='ui top fixed three item menu'>
-          <Menu.Item id='logo'><img src={ logo } alt='logo'/></Menu.Item>
+          <Menu.Item><img id='logo' src={ logo } alt='logo'/></Menu.Item>
           <div id='title' className='item'>{this.props.display.title}</div>
-          <Menu.Item className="right menu"><a>Menu</a></Menu.Item>
+          <Menu.Item><a>Menu</a></Menu.Item>
         </Menu>
       </div>
     )
