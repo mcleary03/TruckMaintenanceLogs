@@ -16,6 +16,6 @@ class Display extends Component {
   }
 }
 
-const mapStateToProps = state => {return {display: state.displayReducer.display}}
+const mapStateToProps = state => ({ display: state.displayReducer.display })
 
 export default connect(mapStateToProps)(Display)

@@ -1,30 +1,89 @@
 import React, { Component } from 'react'
-import { Form, Divider, Button, Message } from 'semantic-ui-react'
+import { connect } from 'react-redux'
+import { Form, Divider, Button, Message, Label, Segment, TextArea } from 'semantic-ui-react'
 import findLast from 'lodash/findLast'
+import maintenanceFormReducer from '../reducers'
+import { updateForm, clearForm } from '../actions'
 
-const trucks = [
-  {id: '2', manufacturer: 'Ford', year: 2005, model: 'F650', color: 'Red', licensePlate: 'JBS1234', mileage: 210433, vin: '98475092304958723049', totalCost: 70, img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg'},
-  {id: '3', manufacturer: 'Ford', year: 2006, model: 'F650', color: 'Red', licensePlate: 'ASD3456', mileage: 141886, vin: 'q3094857203458947050', totalCost: 310, img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg'},
-  {id: '4', manufacturer: 'International', year: 2009, model: '4300', color: 'Yellow', licensePlate: 'LKJ9898', mileage: 356721, vin: '34134345245324524562', totalCost: 82, img: 'https://cdn1.commercialtrucktrader.com/v1/media/59944b952e14f62b9f7ffd42.jpg?width=300&height=225'},
+let trucks = [
+  {
+    id: '2',
+    manufacturer: 'Ford',
+    year: 2005,
+    model: 'F650',
+    color: 'red',
+    licensePlate: 'JBS1234',
+    mileage: 210433,
+    vin: '98475092304958723049',
+    totalCost: 70,
+    img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg',
+    serviceRecords: [
+      {
+        category: 'oil',
+        service: 'oil change',
+        mileage: 207450,
+        cost: 70.00,
+        date: '06-29-2017',
+        notes: 'fast service',
+        location: 'McWhorters'
+      }
+    ]
+  },
+  {
+    id: '3',
+    manufacturer: 'Ford',
+    year: 2006,
+    model: 'F650',
+    color: 'red',
+    licensePlate: 'ASD3456',
+    mileage: 141886,
+    vin: 'q3094857203458947050',
+    totalCost: 310,
+    img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg',
+    serviceRecords: [
+      {
+        category: 'tire',
+        service: 'tire repair',
+        mileage: 140997,
+        cost: 310.00,
+        date: '07-08-2017',
+        notes: '',
+        location: 'McWhorters'
+      }
+    ]
+  },
+  {
+    id: '4',
+    manufacturer: 'International',
+    year: 2009,
+    model: '4300',
+    color: 'yellow',
+    licensePlate: 'LKJ9898',
+    mileage: 356721,
+    vin: '34134345245324524562',
+    totalCost: 82,
+    img: 'https://cdn1.commercialtrucktrader.com/v1/media/59944b952e14f62b9f7ffd42.jpg?width=300&height=225',
+    serviceRecords: [
+      {
+        category: 'oil',
+        service: 'oil change',
+        mileage: 356713,
+        cost: 82.00,
+        date: '08-26-2017',
+        notes: '',
+        location: 'self'
+      }
+    ]
+  },
 ]
 
-let truckNumbers = trucks.map( truck => {
-  return { text: truck.id, value: truck.id }
-})
-
-// Relational Database style here, might want to just put these inside trucks
-let serviceRecords = [
-  {id: '1', truck: '2', category: 'oil', service: 'oil change', mileage: 207450, cost: 70.00, date: '06/29/2017', notes: 'fast service'},
-  {id: '2', truck: '3', category: 'tire', service: 'tire repair', mileage: 140997, cost: 310.00, date: '07/08/2017', notes: ''},
-  {id: '3', truck: '4', category: 'oil', service: 'oil change', mileage: 356713, cost: 82.00, date: '08/26/2017', notes: ''},
-]
-
-let categories = [
+const categories = [
   {text: 'tires', value: 'tires' },
   {text: 'engine', value: 'engine'},
   {text: 'oil', value: 'oil'},
 ]
-let services = {
+
+const services = {
   tires: [
     {text: 'tire change', value: 'tire change' },
     {text: 'tire repair', value: 'tire repair'},
@@ -35,135 +94,186 @@ let services = {
     {text: 'engine tuneup', value: 'engine tuneup'},
     {text: 'engine inspection', value: 'engine inspection'},
   ],
-  Oil: [
+  oil: [
     {text: 'oil change', value: 'oil change'},
     {text: 'oil filter', value: 'oil filter'},
     {text: 'oil pump', value: 'oil pump'},
   ],
 }
 
-export default class MaintenanceForm extends Component {
+class MaintenanceForm extends Component {
   constructor() {
     super()
-    let today = new Date()
-    this.defaultState = {
-      id: serviceRecords.length + 1,
-      truck: '',
-      mileage: '',
-      category: '',
-      service: '',
-      notes: '',
-      cost: '',
-      date: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
-    }
-    this.state = this.defaultState
+    let flashMessage = <div/>
+
+    this.state = { selectedTruckID: '' }
     this.handleChange = this.handleChange.bind(this)
+    this.setTruckID = this.setTruckID.bind(this)
   }
 
-  // This is for Semantic UI Form components
-  // target comes from semantic-ui-react instead of the event
+  // Semantic UI component events send second argument to refer to DOM target
   handleChange = (e, target) => {
-    this.setState({ [target.id]: target.value })
+    this.props.updateForm(target.id, target.value)
+    // this.setState({ [target.id]: target.value })
+    this.flashMessage = <div/>
   }
 
-  // For Non-Semantic UI component inputs
-  updateNotes = (e) => {
-    this.setState({ notes: e.target.value })
-  }
+  setTruckID = (e, target) => this.setState({selectedTruckID: target.value})
 
-  reset = () => this.setState( this.defaultState )
-
+  //TODO VALIDATION PRIOR TO SAVE
   save = () => {
-    // add log to database
-    serviceRecords.push(this.state)
     // update running total cost on truck record
     let truck = this.selectedTruck()
     truck.totalCost = this.getTotalCost()
-    this.reset()
+    // add log to database
+    truck.serviceRecords.push(this.props.maintenanceForm)
+    this.props.clearForm()
+    // Replace this with logic checking if database save was Successful
+    this.setFlashMessage('SUCCESS')
   }
 
   getTotalCost = () => {
     let list = this.selectedTruckRecords()
-    return list.reduce( ( mem, record ) => mem += Number(record.cost), 0 )
+    return list.reduce( ( sum, record ) => sum += Number(record.cost), 0 )
   }
 
   showServiceOptions = () => {
-    if (this.state.category) {
+    if (this.props.maintenanceForm.category) {
       return (
         <Form.Select
+          id='service'
           label='Service'
           onChange={ this.handleChange }
-          options={ services[this.state.category] }
+          value={ this.props.maintenanceForm.service }
+          options={ services[this.props.maintenanceForm.category] }
           placeholder='Select a Service'
         />
       )
     }
   }
 
+  getTruckNumbers = trucks.map( t => ({text: t.id, value: t.id}) )
+
   selectedTruck = () => {
-    if (this.state.truck) {
-      let truck = trucks.find( t => t.id === this.state.truck )
+    if (this.state.selectedTruckID) {
+      let truck = trucks.find( t => t.id === this.state.selectedTruckID )
       return truck
+    } else {
+      console.log('NO TRUCK OBJECT SELECTED')
     }
   }
 
-  selectedTruckRecords = () => {
-    return serviceRecords.filter( r => r.truck === this.state.truck )
-  }
+  selectedTruckRecords = () => (this.selectedTruck().serviceRecords)
 
   selectedTruckDisplay = () => {
-    if (this.state.truck) {
+    if (this.state.selectedTruckID) {
       let truck = this.selectedTruck()
-      let { manufacturer, year, model, color, licensePlate, vin, img, totalCost } = truck
-      let lastRecord = findLast(serviceRecords, record => record.truck === truck.id)
+      let { id, manufacturer, year, model, color, licensePlate, vin, img, totalCost } = truck
+      let lastRecord = truck.serviceRecords[truck.serviceRecords.length - 1]
+      let tagColor = 'teal'
       console.log('last record', lastRecord)
 
       return (
         <div id='selectedTruckDisplay'>
-          <h2 className='ui top attached header'>{ year } { manufacturer } { model }</h2>
+          <h3 className='ui top attached header'>
+            <Label basic horizontal color='teal' size='large'>
+              {id}
+            </Label>
+            { year } { manufacturer } { model }
+          </h3>
           <div className='ui attached segment centered stackable three column grid'>
             <div className='ui centered column'>
-              <h3>Color: { color }</h3>
-              <h3>Plate# { licensePlate }</h3>
-              <h3>VIN# { vin }</h3>
-              <h3>Total Cost: ${ totalCost }</h3>
+              <h3>Truck Information</h3>
+              <h4>Color: { color }</h4>
+              <h4>Plate# { licensePlate }</h4>
+              <h4>VIN# { vin }</h4>
+              <h4>Total Cost: ${ totalCost }</h4>
             </div>
             <div className='ui centered column'>
-              <img id='truckImage' src={ img } alt='truck'/>
+              <div className="ui image fluid">
+                <img
+                  id='truckImage'
+                  src={ img }
+                  alt='truck'
+                />
+              </div>
             </div>
             <div className='ui centered column'>
-              <h3>Last Maintenance on { lastRecord.date }</h3>
-              <h3>Service: { lastRecord.service }</h3>
-                <div className='notes'>
-                  <em>{ lastRecord.notes }</em>
-                </div>
-              <h3>Mileage: { lastRecord.mileage }</h3>
-              <h3>Cost: ${ lastRecord.cost }</h3>
+              <h3>Last Maintenance</h3>
+              <Label.Group id='labels' className='truckTagDisplay fluid'>
+                <Label basic color={ tagColor }>Date
+                  <Label.Detail>
+                    { lastRecord.date }
+                  </Label.Detail>
+                </Label>
+                <Label basic color={ tagColor }>Location
+                  <Label.Detail>
+                    { lastRecord.location }
+                  </Label.Detail>
+                </Label>
+                <Label basic color={ tagColor }>Service
+                  <Label.Detail>
+                    { lastRecord.service }
+                  </Label.Detail>
+                </Label>
+                <Label basic color={ tagColor }>Mileage
+                  <Label.Detail>
+                    { lastRecord.mileage }
+                  </Label.Detail>
+                </Label>
+                <Label basic color={ tagColor }>Cost
+                  <Label.Detail>
+                    { lastRecord.cost }
+                  </Label.Detail>
+                </Label>
+              </Label.Group>
+              <div className='noteDisplay'>
+                <em>{ lastRecord.notes }</em>
+              </div>
             </div>
           </div>
         </div>
       )
-    }
+    } else
     return <div/>
   }
 
-  saveConfirmation = () => {
-    return (
-      <div>
-        <Message positive>
-          <Message.Header>Save Successful!</Message.Header>
-          <p>All records have been pushed to the database.</p>
-        </Message>
-      </div>
-    )
+  setFlashMessage = type => {
+    switch (type) {
+      case 'SUCCESS' :
+        this.flashMessage = (
+          <div>
+            <Message positive>
+              <Message.Header>Save Successful!</Message.Header>
+              <p>All records have been pushed to the database.</p>
+            </Message>
+          </div>
+        )
+        break
+      case 'ERROR' :
+        this.flashMessage = (
+          <div>
+            <Message negative>
+              <Message.Header>Cancelled</Message.Header>
+              <p>Records have NOT been saved!</p>
+            </Message>
+          </div>
+        )
+        break
+      default :
+        this.flashMessage = <div/>
+    }
   }
 
   render() {
     console.log('new state: ', this.state)
+    console.log('new store: ', this.props.maintenanceForm)
+    console.log('trucks: ', trucks)
     let selectedTruck = this.selectedTruck()
 
     return (
       <div>
+        { this.flashMessage }
         { this.selectedTruckDisplay() }
         <Form className='ui centered grid'>
 
@@ -173,16 +283,16 @@ export default class MaintenanceForm extends Component {
               <Form.Select
                 id='truck'
                 label='Truck #'
-                options={ truckNumbers }
-                onChange={ this.handleChange }
-                value={ selectedTruck ? selectedTruck.id : '' }
+                options={ this.getTruckNumbers }
+                onChange={ this.setTruckID }
+                value={ this.selectedTruckID }
                 placeholder='Truck #'
                 />
               <Form.Input
                 id='mileage'
                 label='Mileage'
                 onChange={ this.handleChange }
-                value={ this.state.mileage ? this.state.mileage : '' }
+                value={ this.props.maintenanceForm.mileage ? this.props.maintenanceForm.mileage : '' }
                 placeholder='Mileage'
               />
             </div>
@@ -190,11 +300,18 @@ export default class MaintenanceForm extends Component {
 
           <Divider horizontal>Service</Divider>
           <Form.Group inline>
+            <Form.Input
+              id='location'
+              label='Location'
+              onChange={ this.handleChange }
+              value={ this.props.maintenanceForm.location }
+              placeholder='Location'/>
             <Form.Select
               id='category'
               label='Category'
               options={ categories }
               onChange={ this.handleChange }
+              value={ this.props.maintenanceForm.category }
               placeholder='Select a Category'
             />
             {this.showServiceOptions()}
@@ -202,21 +319,23 @@ export default class MaintenanceForm extends Component {
               id='cost'
               label='Cost'
               onChange={ this.handleChange }
-              value={ this.state.cost }
+              value={ this.props.maintenanceForm.cost }
               placeholder='Cost of Service'
             />
           </Form.Group>
 
           <Divider horizontal>Notes</Divider>
-          <textarea
-            rows='2'
+          <TextArea
             id='notes'
-            onChange={ this.updateNotes }
-            value={ this.state.notes }
-            placeholder='Service Notes'></textarea>
-          <Divider horizontal></Divider>
+            rows={ 2 }
+            autoHeight
+            onChange={ this.handleChange }
+            value={ this.props.maintenanceForm.notes }
+            placeholder='Service Notes'
+          />
+        <Divider horizontal />
           <Button.Group widths='2'>
-            <Button color='red' onClick={ this.reset }>Cancel</Button>
+            <Button color='red' onClick={ this.props.clearForm }>Cancel</Button>
             <Button color='blue' onClick={ this.save }>Save</Button>
           </Button.Group>
         </Form>
@@ -224,3 +343,16 @@ export default class MaintenanceForm extends Component {
     )
   }
 }
+
+const mapStateToProps = state => (
+  { maintenanceForm: state.maintenanceFormReducer }
+)
+
+const mapDispatchToProps = dispatch => (
+  {
+    updateForm: (key, value) => dispatch(updateForm(key, value)),
+    clearForm: () => dispatch(clearForm())
+  }
+)
+
+export default connect(mapStateToProps, mapDispatchToProps)(MaintenanceForm)

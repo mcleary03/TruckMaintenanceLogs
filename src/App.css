@@ -4,15 +4,25 @@
 
 Body {
   margin-top: 50px;
+  background: #FFF;
 }
 
-Menu.Item:hover {
+Item:hover {
   cursor: pointer;
 }
 
+#topMenu {
+  box-shadow: 0px 2px 4px 1px rgba(100, 100, 100, 0.3);
+}
+
+/* menu buttons */
 .ui.menu .item {
   padding: 0;
-  font-size: 2em;
+  font-size: 1.5em;
+}
+
+#collapsedMenuButton:hover {
+  cursor: pointer;
 }
 
 #logo {
@@ -30,14 +40,18 @@ Menu.Item:hover {
   text-shadow: 1px 1px rgba(10, 10, 10, 0.5);
 }
 
+div.ui.horizontal.divider {
+  margin: 1.75rem 0 1.25rem 0;
+}
+
 #truckImage {
-  width: 25vw;
+  width: 100%;
 }
 
 h1 {
   color: #5F80EE;
 }
 
-.notes {
+.noteDisplay {
   color: #444AAA;
 }
