@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Form, Divider, Button, Message, Label, TextArea } from 'semantic-ui-react'
-import { maintenanceFormReducer, selectedTruckReducer } from '../reducers'
-import { updateForm, clearForm, selectTruck } from '../actions'
+import { updateForm, clearForm, selectTruck, getTruck } from '../actions'
 
 let trucks = [
   {
@@ -355,7 +354,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   selectTruck: truckID => dispatch(selectTruck(truckID)),
   updateForm: (key, value) => dispatch(updateForm(key, value)),
-  clearForm: () => dispatch(clearForm())
+  clearForm: () => dispatch(clearForm()),
+  getTruck: truckID => dispatch(getTruck(truckID))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(MaintenanceForm)

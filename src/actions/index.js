@@ -25,3 +25,10 @@ export const selectTruck = truckID => {
     truckID
   })
 }
+
+export const getTruck = truckID => {
+  return ({
+    type: 'GET_TRUCK',
+    truckID
+  })
+}
