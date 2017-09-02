@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Form, Divider, Button, Message, Label, Segment, TextArea } from 'semantic-ui-react'
-import findLast from 'lodash/findLast'
-import maintenanceFormReducer from '../reducers'
-import { updateForm, clearForm } from '../actions'
+import { Form, Divider, Button, Message, Label, TextArea } from 'semantic-ui-react'
+import { maintenanceFormReducer, selectedTruckReducer } from '../reducers'
+import { updateForm, clearForm, selectTruck } from '../actions'
 
 let trucks = [
   {
@@ -104,21 +103,22 @@ const services = {
 class MaintenanceForm extends Component {
   constructor() {
     super()
-    let flashMessage = <div/>
+    this.flashMessage = <div/>
 
-    this.state = { selectedTruckID: '' }
     this.handleChange = this.handleChange.bind(this)
-    this.setTruckID = this.setTruckID.bind(this)
+    this.setSelectedTruck = this.setSelectedTruck.bind(this)
   }
 
   // Semantic UI component events send second argument to refer to DOM target
   handleChange = (e, target) => {
     this.props.updateForm(target.id, target.value)
-    // this.setState({ [target.id]: target.value })
     this.flashMessage = <div/>
   }
 
-  setTruckID = (e, target) => this.setState({selectedTruckID: target.value})
+  setSelectedTruck = (e, target) => {
+    console.log('selecting truck: ', target.value)
+    this.props.selectTruck(target.value)
+  }
 
   //TODO VALIDATION PRIOR TO SAVE
   save = () => {
@@ -152,21 +152,25 @@ class MaintenanceForm extends Component {
     }
   }
 
-  getTruckNumbers = trucks.map( t => ({text: t.id, value: t.id}) )
+  getTruckNumbers = () => (
+    trucks.map( t => ({text: t.id, value: t.id}) )
+  )
 
   selectedTruck = () => {
-    if (this.state.selectedTruckID) {
-      let truck = trucks.find( t => t.id === this.state.selectedTruckID )
+    if (this.props.selectedTruck.id) {
+      let truck = trucks.find( t => t.id === this.props.selectedTruck.id )
       return truck
     } else {
       console.log('NO TRUCK OBJECT SELECTED')
+      return
     }
   }
 
   selectedTruckRecords = () => (this.selectedTruck().serviceRecords)
 
   selectedTruckDisplay = () => {
-    if (this.state.selectedTruckID) {
+    console.log(this.props.selectedTruck.id)
+    if (this.props.selectedTruck.id) {
       let truck = this.selectedTruck()
       let { id, manufacturer, year, model, color, licensePlate, vin, img, totalCost } = truck
       let lastRecord = truck.serviceRecords[truck.serviceRecords.length - 1]
@@ -266,10 +270,9 @@ class MaintenanceForm extends Component {
   }
 
   render() {
-    console.log('new state: ', this.state)
-    console.log('new store: ', this.props.maintenanceForm)
+    console.log('new props: ', this.props)
+    console.log('new form: ', this.props.maintenanceForm)
     console.log('trucks: ', trucks)
-    let selectedTruck = this.selectedTruck()
 
     return (
       <div>
@@ -283,11 +286,11 @@ class MaintenanceForm extends Component {
               <Form.Select
                 id='truck'
                 label='Truck #'
-                options={ this.getTruckNumbers }
-                onChange={ this.setTruckID }
-                value={ this.selectedTruckID }
+                options={ this.getTruckNumbers() }
+                onChange={ this.setSelectedTruck }
+                value={ this.props.selectedTruck.id }
                 placeholder='Truck #'
-                />
+              />
               <Form.Input
                 id='mileage'
                 label='Mileage'
@@ -344,15 +347,15 @@ class MaintenanceForm extends Component {
   }
 }
 
-const mapStateToProps = state => (
-  { maintenanceForm: state.maintenanceFormReducer }
-)
+const mapStateToProps = state => ({
+  selectedTruck: state.selectedTruckReducer,
+  maintenanceForm: state.maintenanceFormReducer
+})
 
-const mapDispatchToProps = dispatch => (
-  {
-    updateForm: (key, value) => dispatch(updateForm(key, value)),
-    clearForm: () => dispatch(clearForm())
-  }
-)
+const mapDispatchToProps = dispatch => ({
+  selectTruck: truckID => dispatch(selectTruck(truckID)),
+  updateForm: (key, value) => dispatch(updateForm(key, value)),
+  clearForm: () => dispatch(clearForm())
+})
 
 export default connect(mapStateToProps, mapDispatchToProps)(MaintenanceForm)

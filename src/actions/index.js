@@ -18,3 +18,10 @@ export const clearForm = () => {
     type: 'CLEAR_FORM',
   })
 }
+
+export const selectTruck = truckID => {
+  return ({
+    type: 'SELECT_TRUCK',
+    truckID
+  })
+}
