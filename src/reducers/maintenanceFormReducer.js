@@ -18,14 +18,17 @@ const maintenanceFormReducer = (state = defaultState, action) => {
   let newState = merge({}, state)
   let { type, key, value } = action
   switch(type) {
-    case 'UPDATE_FORM' :
+    case 'UPDATE_FORM':
       newState[key] = value
       return newState
-    case 'CLEAR_FORM' :
+    case 'SAVE_FORM':
+      // push to database
+      break
+    case 'CLEAR_FORM':
       return defaultState
-    default :
+    default:
       return state
   }
 }
 
-export default persistentReducer(maintenanceFormReducer, 'maintenanceFormReducer')
+export default persistentReducer(maintenanceFormReducer)

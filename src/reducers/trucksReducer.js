@@ -1,29 +1,37 @@
 import { persistentReducer } from 'redux-pouchdb'
 import merge from 'lodash/merge'
 
-const trucksReducer = (state = trucks, action) => {
+// import Truck from '../models'
+
+const trucksReducer = (state = { selectedTruck: undefined, trucks }, action) => {
   Object.freeze(state)
   let newState = merge({}, state)
-  let { type, truckID } = action
-  switch(type) {
-    case 'GET_TRUCK' :
-      return selectedTruck(truckID)
-    case 'UPDATE_TRUCK' :
-      return state
-    case 'ADD_TRUCK' :
-      return state
-    case 'DELETE_TRUCK' :
-      return state
-    default :
+
+  const findTruck = id => state.trucks.find(t => t.id === id)
+
+  switch(action.type) {
+    case 'SELECT_TRUCK':
+      return merge(
+        newState,
+        {
+          selectedTruck: findTruck(action.truckID)
+        }
+      )
+    case 'UPDATE_TRUCK':
+      trucks.
+      state.selectedTruck.id
+      return newState
+    case 'ADD_TRUCK':
+      // newState.trucks.push(new Truck(truckData))
+      return newState
+    default:
       return state
   }
 }
 
-export default persistentReducer(trucksReducer, 'trucksReducer')
+export default persistentReducer(trucksReducer)
 
-const selectedTruck = () => trucks.find( t => t.id === this.props.selectedTruck.id )
-
-let trucks = [
+const trucks = [
   {
     id: '2',
     manufacturer: 'Ford',
@@ -33,7 +41,7 @@ let trucks = [
     licensePlate: 'JBS1234',
     mileage: 210433,
     vin: '98475092304958723049',
-    totalCost: 70,
+    totalCost: 70.00,
     img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg',
     serviceRecords: [
       {
@@ -56,7 +64,7 @@ let trucks = [
     licensePlate: 'ASD3456',
     mileage: 141886,
     vin: 'q3094857203458947050',
-    totalCost: 310,
+    totalCost: 310.00,
     img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg',
     serviceRecords: [
       {
@@ -79,7 +87,7 @@ let trucks = [
     licensePlate: 'LKJ9898',
     mileage: 356721,
     vin: '34134345245324524562',
-    totalCost: 82,
+    totalCost: 82.00,
     img: 'https://cdn1.commercialtrucktrader.com/v1/media/59944b952e14f62b9f7ffd42.jpg?width=300&height=225',
     serviceRecords: [
       {

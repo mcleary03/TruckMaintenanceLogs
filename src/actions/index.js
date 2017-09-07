@@ -19,16 +19,16 @@ export const clearForm = () => {
   })
 }
 
-export const selectTruck = truckID => {
+export const updateTruck = (truck) => {
   return ({
-    type: 'SELECT_TRUCK',
-    truckID
+    type: 'UPDATE_TRUCK',
+    truck
   })
 }
 
-export const getTruck = truckID => {
+export const selectTruck = truckID => {
   return ({
-    type: 'GET_TRUCK',
+    type: 'SELECT_TRUCK',
     truckID
   })
 }

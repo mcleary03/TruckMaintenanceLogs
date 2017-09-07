@@ -4,7 +4,7 @@ import './index.css'
 import App from './App'
 import PouchDB from 'pouchdb'
 import reducers from './reducers'
-import { createStore, compose, applyMiddleware } from 'redux'
+import { createStore, compose } from 'redux'
 import { Provider } from 'react-redux'
 import { persistentStore } from 'redux-pouchdb'
 import registerServiceWorker from './registerServiceWorker'
@@ -20,6 +20,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const createStoreWithMiddleware = compose(
     persistentStore(db)
   )(createStore)
+
+  // db.destroy().then(function (response) {
+  //   // success
+  // }).catch(function (err) {
+  //   console.log(err);
+  // });
+  // console.log(db)
 
   const store = createStoreWithMiddleware(reducers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
   const root = document.getElementById("root")

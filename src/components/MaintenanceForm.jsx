@@ -1,79 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Form, Divider, Button, Message, Label, TextArea } from 'semantic-ui-react'
-import { updateForm, clearForm, selectTruck, getTruck } from '../actions'
+import { updateForm, clearForm, selectTruck, updateTruck } from '../actions'
 
-let trucks = [
-  {
-    id: '2',
-    manufacturer: 'Ford',
-    year: 2005,
-    model: 'F650',
-    color: 'red',
-    licensePlate: 'JBS1234',
-    mileage: 210433,
-    vin: '98475092304958723049',
-    totalCost: 70,
-    img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg',
-    serviceRecords: [
-      {
-        category: 'oil',
-        service: 'oil change',
-        mileage: 207450,
-        cost: 70.00,
-        date: '06-29-2017',
-        notes: 'fast service',
-        location: 'McWhorters'
-      }
-    ]
-  },
-  {
-    id: '3',
-    manufacturer: 'Ford',
-    year: 2006,
-    model: 'F650',
-    color: 'red',
-    licensePlate: 'ASD3456',
-    mileage: 141886,
-    vin: 'q3094857203458947050',
-    totalCost: 310,
-    img: 'http://jingletruck.com/img/2004-ford-f650-xl-cummins-diesel-box-truck-262234311723-0.jpg',
-    serviceRecords: [
-      {
-        category: 'tire',
-        service: 'tire repair',
-        mileage: 140997,
-        cost: 310.00,
-        date: '07-08-2017',
-        notes: '',
-        location: 'McWhorters'
-      }
-    ]
-  },
-  {
-    id: '4',
-    manufacturer: 'International',
-    year: 2009,
-    model: '4300',
-    color: 'yellow',
-    licensePlate: 'LKJ9898',
-    mileage: 356721,
-    vin: '34134345245324524562',
-    totalCost: 82,
-    img: 'https://cdn1.commercialtrucktrader.com/v1/media/59944b952e14f62b9f7ffd42.jpg?width=300&height=225',
-    serviceRecords: [
-      {
-        category: 'oil',
-        service: 'oil change',
-        mileage: 356713,
-        cost: 82.00,
-        date: '08-26-2017',
-        notes: '',
-        location: 'self'
-      }
-    ]
-  },
-]
 
 const categories = [
   {text: 'tires', value: 'tires' },
@@ -103,7 +32,6 @@ class MaintenanceForm extends Component {
   constructor() {
     super()
     this.flashMessage = <div/>
-
     this.handleChange = this.handleChange.bind(this)
     this.setSelectedTruck = this.setSelectedTruck.bind(this)
   }
@@ -114,26 +42,25 @@ class MaintenanceForm extends Component {
     this.flashMessage = <div/>
   }
 
-  setSelectedTruck = (e, target) => {
-    console.log('selecting truck: ', target.value)
-    this.props.selectTruck(target.value)
-  }
+  getTruckNumbers = () => this.props.trucks.map( t => ({text: t.id, value: t.id}) )
+
+  setSelectedTruck = (e, target) => this.props.selectTruck(target.value)
 
   //TODO VALIDATION PRIOR TO SAVE
   save = () => {
     // update running total cost on truck record
-    let truck = this.selectedTruck()
-    truck.totalCost = this.getTotalCost()
+    let truck = this.props.selectedTruck
+    truck.totalCost = this.getTotalCost(truck)
     // add log to database
     truck.serviceRecords.push(this.props.maintenanceForm)
+    this.props.updateTruck(this.props.selectedTruck)
     this.props.clearForm()
     // Replace this with logic checking if database save was Successful
     this.setFlashMessage('SUCCESS')
   }
 
-  getTotalCost = () => {
-    let list = this.selectedTruckRecords()
-    return list.reduce( ( sum, record ) => sum += Number(record.cost), 0 )
+  getTotalCost = truck => {
+    return truck.serviceRecords.reduce( ( sum, record ) => sum + Number(record.cost), 0 )
   }
 
   showServiceOptions = () => {
@@ -151,36 +78,23 @@ class MaintenanceForm extends Component {
     }
   }
 
-  getTruckNumbers = () => (
-    trucks.map( t => ({text: t.id, value: t.id}) )
-  )
-
-  selectedTruck = () => {
-    if (this.props.selectedTruck.id) {
-      let truck = trucks.find( t => t.id === this.props.selectedTruck.id )
-      return truck
-    } else {
-      console.log('NO TRUCK OBJECT SELECTED')
-      return
-    }
-  }
-
-  selectedTruckRecords = () => (this.selectedTruck().serviceRecords)
-
   selectedTruckDisplay = () => {
-    console.log(this.props.selectedTruck.id)
-    if (this.props.selectedTruck.id) {
-      let truck = this.selectedTruck()
-      let { id, manufacturer, year, model, color, licensePlate, vin, img, totalCost } = truck
-      let lastRecord = truck.serviceRecords[truck.serviceRecords.length - 1]
-      let tagColor = 'teal'
-      console.log('last record', lastRecord)
+    let truck = this.props.selectedTruck
+    if (truck) {
+      let { id, manufacturer, year, model, color, licensePlate, vin, img, totalCost, serviceRecords } = truck
+      console.log('selectedTruckDisplay is showing truck# ' + id)
+      let lastRecord
+
+      if (serviceRecords) {
+        lastRecord = serviceRecords[serviceRecords.length - 1]
+        console.log('last record', lastRecord)
+      }
 
       return (
         <div id='selectedTruckDisplay'>
           <h3 className='ui top attached header'>
-            <Label basic horizontal color='teal' size='large'>
-              {id}
+            <Label basic horizontal color='orange' size='large'>
+              { id }
             </Label>
             { year } { manufacturer } { model }
           </h3>
@@ -202,43 +116,47 @@ class MaintenanceForm extends Component {
               </div>
             </div>
             <div className='ui centered column'>
-              <h3>Last Maintenance</h3>
-              <Label.Group id='labels' className='truckTagDisplay fluid'>
-                <Label basic color={ tagColor }>Date
-                  <Label.Detail>
-                    { lastRecord.date }
-                  </Label.Detail>
-                </Label>
-                <Label basic color={ tagColor }>Location
-                  <Label.Detail>
-                    { lastRecord.location }
-                  </Label.Detail>
-                </Label>
-                <Label basic color={ tagColor }>Service
-                  <Label.Detail>
-                    { lastRecord.service }
-                  </Label.Detail>
-                </Label>
-                <Label basic color={ tagColor }>Mileage
-                  <Label.Detail>
-                    { lastRecord.mileage }
-                  </Label.Detail>
-                </Label>
-                <Label basic color={ tagColor }>Cost
-                  <Label.Detail>
-                    { lastRecord.cost }
-                  </Label.Detail>
-                </Label>
-              </Label.Group>
-              <div className='noteDisplay'>
-                <em>{ lastRecord.notes }</em>
-              </div>
+              {lastRecord ? (<div>
+                <h3>Last Maintenance</h3>
+                <Label.Group id='labels' className='truckTagDisplay fluid'>
+                  <Label basic >Date
+                    <Label.Detail>
+                      { lastRecord.date }
+                    </Label.Detail>
+                  </Label>
+                  <Label basic >Location
+                    <Label.Detail>
+                      { lastRecord.location }
+                    </Label.Detail>
+                  </Label>
+                  <Label basic >Service
+                    <Label.Detail>
+                      { lastRecord.service }
+                    </Label.Detail>
+                  </Label>
+                  <Label basic >Mileage
+                    <Label.Detail>
+                      { lastRecord.mileage }
+                    </Label.Detail>
+                  </Label>
+                  <Label basic >Cost
+                    <Label.Detail>
+                      { lastRecord.cost }
+                    </Label.Detail>
+                  </Label>
+                </Label.Group>
+                <div className='noteDisplay'>
+                  <em>{ lastRecord.notes }</em>
+                </div></div>
+              ) : (
+                <div><p>No Previous Records</p></div>
+              )}
             </div>
           </div>
         </div>
       )
     } else
-    return <div/>
+    return <div><p>Select a Truck</p></div>
   }
 
   setFlashMessage = type => {
@@ -271,7 +189,7 @@ class MaintenanceForm extends Component {
   render() {
     console.log('new props: ', this.props)
     console.log('new form: ', this.props.maintenanceForm)
-    console.log('trucks: ', trucks)
+    console.log('trucks: ', this.props.trucks)
 
     return (
       <div>
@@ -287,7 +205,7 @@ class MaintenanceForm extends Component {
                 label='Truck #'
                 options={ this.getTruckNumbers() }
                 onChange={ this.setSelectedTruck }
-                value={ this.props.selectedTruck.id }
+                value={ this.props.selectedTruck ? this.props.selectedTruck.id : '' }
                 placeholder='Truck #'
               />
               <Form.Input
@@ -347,15 +265,16 @@ class MaintenanceForm extends Component {
 }
 
 const mapStateToProps = state => ({
-  selectedTruck: state.selectedTruckReducer,
-  maintenanceForm: state.maintenanceFormReducer
+  selectedTruck: state.trucksReducer.selectedTruck,
+  trucks: state.trucksReducer.trucks, // basically, the whole DB
+  maintenanceForm: state.maintenanceFormReducer // unsaved form data
 })
 
 const mapDispatchToProps = dispatch => ({
+  updateTruck: (truck) => dispatch(updateTruck(updateTruck)),
   selectTruck: truckID => dispatch(selectTruck(truckID)),
   updateForm: (key, value) => dispatch(updateForm(key, value)),
-  clearForm: () => dispatch(clearForm()),
-  getTruck: truckID => dispatch(getTruck(truckID))
+  clearForm: () => dispatch(clearForm())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(MaintenanceForm)

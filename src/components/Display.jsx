@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Container } from 'semantic-ui-react'
-import displayReducer from '../reducers'
+import { setDisplay } from '../actions'
 
 class Display extends Component {
   render() {
@@ -18,4 +18,8 @@ class Display extends Component {
 
 const mapStateToProps = state => ({ display: state.displayReducer.display })
 
-export default connect(mapStateToProps)(Display)
+const mapDispatchToProps = dispatch => ({
+  setDisplay: () => dispatch(setDisplay())
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Display)
