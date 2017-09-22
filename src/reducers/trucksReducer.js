@@ -1,28 +1,28 @@
 import { persistentReducer } from 'redux-pouchdb'
 import merge from 'lodash/merge'
-
 // import Truck from '../models'
 
 const trucksReducer = (state = { selectedTruck: undefined, trucks }, action) => {
   Object.freeze(state)
   let newState = merge({}, state)
 
-  const findTruck = id => state.trucks.find(t => t.id === id)
+  const getTotalCost = id => (
+    newState.trucks[id].serviceRecords.reduce( ( sum, record ) => sum + Number(record.cost), 0 )
+  )
 
   switch(action.type) {
     case 'SELECT_TRUCK':
-      return merge(
-        newState,
-        {
-          selectedTruck: findTruck(action.truckID)
-        }
-      )
+      newState.selectedTruck = newState.trucks[action.truckID]
+      return newState
     case 'UPDATE_TRUCK':
-      trucks.
-      state.selectedTruck.id
+      newState.selectedTruck.totalCost = getTotalCost(newState.selectedTruck.id)
+      newState.trucks[newState.selectedTruck.id] = newState.selectedTruck
+      return newState
+    case 'CLEAR_FORM':
+      newState.selectedTruck = undefined
       return newState
     case 'ADD_TRUCK':
-      // newState.trucks.push(new Truck(truckData))
+      newState.trucks.push(action.truck)
       return newState
     default:
       return state
@@ -31,8 +31,9 @@ const trucksReducer = (state = { selectedTruck: undefined, trucks }, action) => 
 
 export default persistentReducer(trucksReducer)
 
-const trucks = [
-  {
+
+const trucks = {
+  '2': {
     id: '2',
     manufacturer: 'Ford',
     year: 2005,
@@ -55,7 +56,7 @@ const trucks = [
       }
     ]
   },
-  {
+  '3': {
     id: '3',
     manufacturer: 'Ford',
     year: 2006,
@@ -78,7 +79,7 @@ const trucks = [
       }
     ]
   },
-  {
+  '4': {
     id: '4',
     manufacturer: 'International',
     year: 2009,
@@ -101,4 +102,4 @@ const trucks = [
       }
     ]
   },
-]
+}

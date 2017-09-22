@@ -42,36 +42,30 @@ class MaintenanceForm extends Component {
     this.flashMessage = <div/>
   }
 
-  getTruckNumbers = () => this.props.trucks.map( t => ({text: t.id, value: t.id}) )
+  getTruckNumbers = () => Object.keys(this.props.trucks).map(key => ({text: key, value: key}))
 
   setSelectedTruck = (e, target) => this.props.selectTruck(target.value)
 
   //TODO VALIDATION PRIOR TO SAVE
   save = () => {
-    // update running total cost on truck record
     let truck = this.props.selectedTruck
-    truck.totalCost = this.getTotalCost(truck)
-    // add log to database
     truck.serviceRecords.push(this.props.maintenanceForm)
-    this.props.updateTruck(this.props.selectedTruck)
+    this.props.updateTruck(truck)
     this.props.clearForm()
-    // Replace this with logic checking if database save was Successful
+    // Need logic to determine success
     this.setFlashMessage('SUCCESS')
   }
 
-  getTotalCost = truck => {
-    return truck.serviceRecords.reduce( ( sum, record ) => sum + Number(record.cost), 0 )
-  }
-
   showServiceOptions = () => {
-    if (this.props.maintenanceForm.category) {
+    let { category, service } = this.props.maintenanceForm
+    if (category) {
       return (
         <Form.Select
           id='service'
           label='Service'
           onChange={ this.handleChange }
-          value={ this.props.maintenanceForm.service }
-          options={ services[this.props.maintenanceForm.category] }
+          value={ service }
+          options={ services[category] }
           placeholder='Select a Service'
         />
       )
@@ -82,13 +76,9 @@ class MaintenanceForm extends Component {
     let truck = this.props.selectedTruck
     if (truck) {
       let { id, manufacturer, year, model, color, licensePlate, vin, img, totalCost, serviceRecords } = truck
-      console.log('selectedTruckDisplay is showing truck# ' + id)
       let lastRecord
 
-      if (serviceRecords) {
-        lastRecord = serviceRecords[serviceRecords.length - 1]
-        console.log('last record', lastRecord)
-      }
+      if (serviceRecords) lastRecord = serviceRecords[serviceRecords.length - 1]
 
       return (
         <div id='selectedTruckDisplay'>
@@ -187,10 +177,6 @@ class MaintenanceForm extends Component {
   }
 
   render() {
-    console.log('new props: ', this.props)
-    console.log('new form: ', this.props.maintenanceForm)
-    console.log('trucks: ', this.props.trucks)
-
     return (
       <div>
         { this.flashMessage }
@@ -266,8 +252,8 @@ class MaintenanceForm extends Component {
 
 const mapStateToProps = state => ({
   selectedTruck: state.trucksReducer.selectedTruck,
-  trucks: state.trucksReducer.trucks, // basically, the whole DB
-  maintenanceForm: state.maintenanceFormReducer // unsaved form data
+  trucks: state.trucksReducer.trucks,
+  maintenanceForm: state.maintenanceFormReducer
 })
 
 const mapDispatchToProps = dispatch => ({

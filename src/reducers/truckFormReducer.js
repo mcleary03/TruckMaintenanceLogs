@@ -3,17 +3,20 @@ import merge from 'lodash/merge'
 
 let today = new Date()
 const defaultState = {
-  // id: serviceRecords.length + 1,
-  mileage: '',
-  category: '',
-  service: '',
-  notes: '',
-  cost: '',
-  location: '',
-  date: `${today.getMonth()+1}-${today.getDate()}-${today.getFullYear()}`
+  id: '',
+  manufacturer: '',
+  year: '',
+  model: '',
+  color: '',
+  licensePlate: '',
+  mileage: 0,
+  vin: '',
+  totalCost: 0,
+  img: '',
+  serviceRecords: []
 }
 
-const maintenanceFormReducer = (state = defaultState, action) => {
+const truckFormReducer = (state = defaultState, action) => {
   Object.freeze(state)
   let newState = merge({}, state)
   let { type, key, value } = action
@@ -21,7 +24,7 @@ const maintenanceFormReducer = (state = defaultState, action) => {
     case 'UPDATE_FORM':
       newState[key] = value
       return newState
-    case 'CLEAR_FORM':
+    case 'CLEAR_TRUCK_FORM':
       newState = defaultState
       return newState
     default:
@@ -29,4 +32,4 @@ const maintenanceFormReducer = (state = defaultState, action) => {
   }
 }
 
-export default persistentReducer(maintenanceFormReducer)
+export default persistentReducer(truckFormReducer)

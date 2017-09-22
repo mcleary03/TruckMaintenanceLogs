@@ -15,14 +15,19 @@ export const updateForm = (key, value) => {
 
 export const clearForm = () => {
   return ({
-    type: 'CLEAR_FORM',
+    type: 'CLEAR_FORM'
   })
 }
 
-export const updateTruck = (truck) => {
+export const clearTruckForm = () => {
   return ({
-    type: 'UPDATE_TRUCK',
-    truck
+    type: 'CLEAR_TRUCK_FORM'
+  })
+}
+
+export const updateTruck = () => {
+  return ({
+    type: 'UPDATE_TRUCK'
   })
 }
 
@@ -30,5 +35,12 @@ export const selectTruck = truckID => {
   return ({
     type: 'SELECT_TRUCK',
     truckID
+  })
+}
+
+export const addTruck = truck => {
+  return ({
+    type: 'ADD_TRUCK',
+    truck
   })
 }
